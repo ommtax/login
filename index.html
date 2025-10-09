@@ -1,69 +1,59 @@
-<!DOCTYPE html>
+<!-- demo-login.html -->
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Password to Open Link (SHA-256 check)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Demo Login</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
-    .box { max-width: 420px; }
-    input[type="password"] { width: 100%; padding: 8px; margin-bottom: 8px; }
-    button { padding: 8px 12px; }
-    .msg { margin-top: 8px; color: #c00; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding:2rem; }
+    form { max-width:360px; margin:0 auto; display:grid; gap:.6rem; }
+    input { padding:.6rem; border:1px solid #ccc; border-radius:6px; }
+    button { padding:.6rem; background:#2b8aef; color:white; border:none; border-radius:6px; cursor:pointer; }
+    .error { color:#b00020; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h3>Enter password to open link</h3>
-    <input id="pwd" type="password" placeholder="Password">
+  <h1>Sign in (Demo)</h1>
+
+  <form id="loginForm" autocomplete="on">
+    <label>
+      Username
+      <input id="username" name="username" type="text" required autocomplete="username" />
+    </label>
+
+    <label>
+      Password
+      <input id="password" name="password" type="password" required autocomplete="current-password" />
+    </label>
+
     <div>
-      <button id="openBtn">Open Link</button>
-      <button id="openNewBtn">Open in new tab</button>
+      <button type="submit">Sign in</button>
     </div>
-    <div class="msg" id="msg"></div>
-  </div>
+
+    <div id="msg" class="error" role="alert" aria-live="polite"></div>
+  </form>
 
   <script>
-    // CHANGE THESE:
-    // Precomputed SHA-256 hash (hex) of the real password.
-    // Example: for password "letmein" SHA-256 hex is:
-    // 5f4dcc3b5aa765d61d8327deb882cf99...  <-- NOTE: this is NOT the real hash for letmein; compute your own
-    const TARGET_HASH_HEX = '3e2d9f7b5d5bb0f8e7f3a6c5a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b'; // replace
-    const TARGET_URL = 'https://ommtax.github.io/webpage/';
+    // WARNING: This is client-side checking only — not secure.
+    // For demo only. Replace these with server-side checks in real apps.
+    const CORRECT = { username: 'ommtax', password: 'Binod@786' };
+    const form = document.getElementById('loginForm');
+    const msg = document.getElementById('msg');
 
-    function hex(buffer) {
-      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2,'0')).join('');
-    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      msg.textContent = '';
 
-    async function sha256Hex(message) {
-      const enc = new TextEncoder();
-      const data = enc.encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      return hex(hashBuffer);
-    }
+      const u = form.username.value.trim();
+      const p = form.password.value;
 
-    async function openIfCorrect(openInNewTab=false) {
-      const pwd = document.getElementById('pwd').value;
-      document.getElementById('msg').textContent = '';
-      if (!pwd) { document.getElementById('msg').textContent = 'Enter a password.'; return; }
-
-      try {
-        const h = await sha256Hex(pwd);
-        if (h === TARGET_HASH_HEX) {
-          if (openInNewTab) window.open(TARGET_URL, '_blank');
-          else window.location.href = TARGET_URL;
-        } else {
-          document.getElementById('msg').textContent = 'Incorrect password.';
-        }
-      } catch (err) {
-        document.getElementById('msg').textContent = 'Error computing hash.';
-        console.error(err);
+      if (u === CORRECT.username && p === CORRECT.password) {
+        // redirect to another website/page
+        window.location.href = 'https://ommtax.github.io/webpage/'; // <-- change this
+      } else {
+        msg.textContent = 'Invalid username or password.';
       }
-    }
-
-    document.getElementById('openBtn').addEventListener('click', () => openIfCorrect(false));
-    document.getElementById('openNewBtn').addEventListener('click', () => openIfCorrect(true));
-    document.getElementById('pwd').addEventListener('keydown', e => {
-      if (e.key === 'Enter') openIfCorrect(false);
     });
   </script>
 </body>
